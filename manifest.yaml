@@ -1,0 +1,18 @@
+# Manifest do plugin — validado pelo core (LoadPluginManifest + VerifyPluginManifest).
+# Declare TUDO que o plugin usa: hook fora desta lista falha a verificação.
+apiVersion: commerce.mira.dev/v1
+kind: Plugin
+
+id: example-shipping
+version: 1.0.0
+compatibleCore: "^0.2.0"
+
+runtime:
+  # Binário externo (RPC). Para compilar dentro do core, use in-process —
+  # ver README § Dois modos de rodar.
+  type: go-plugin
+  binary: bin/example-shipping
+
+capabilities:
+  hooks:
+    - shipping.quote

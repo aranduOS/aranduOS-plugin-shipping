@@ -104,6 +104,25 @@ latência, erro e payload — sem depender da rede do parceiro no CI.
 Caminho completo para produção (dev interno e parceiro) no README do
 [template genérico](https://github.com/mira-dev-tech/mira-commerce-plugin-example#colocando-em-produ%C3%A7%C3%A3o).
 
+## Quando o core muda — o plugin de frete quebra?
+
+**Não automaticamente.** O tenant permanece no pin da imagem; este plugin
+segue válido enquanto `compatibleCore` casar com o `CoreLine` do binário.
+
+| Situação | Acção |
+|----------|-------|
+| Core aditivo / hooks noutros domínios | Nada |
+| Campo opcional nos tipos de `shipping.quote` | Opcional: re-vendor |
+| Breaking (`CoreLine` major) | Re-vendor + bump `compatibleCore`; só no upgrade de pin do cliente |
+
+Semântica fail-open deste domínio (nunca `Denied` por falha da transportadora)
+**não muda** só porque o core ganhou features — só muda se o protocolo do hook
+for alterado de propósito (major + notificação).
+
+Contrato:
+[`commerce-ext` § Versionamento](https://github.com/mira-dev-tech/commerce-ext#versionamento-e-compatibilidade--o-que-acontece-quando-o-core-muda)
+· [ADR 0048](https://github.com/mira-dev-tech/mira-commerce-core/blob/main/docs/adr/0048-extension-compatibility-versioning.md).
+
 ## Ecossistema Mirá Commerce
 
 📚 **Documentação pública: [docs.mira-dev.tech](https://docs.mira-dev.tech)**

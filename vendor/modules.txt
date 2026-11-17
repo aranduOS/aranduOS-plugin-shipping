@@ -1,5 +1,5 @@
-# github.com/mira-dev-tech/commerce-ext v0.2.2
-## explicit; go 1.25.7
+# github.com/mira-dev-tech/commerce-ext v0.2.4
+## explicit; go 1.26.5
 github.com/mira-dev-tech/commerce-ext
 github.com/mira-dev-tech/commerce-ext/plugintest
 # gopkg.in/yaml.v3 v3.0.1

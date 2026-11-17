@@ -92,17 +92,17 @@ latência, erro e payload — sem depender da rede do parceiro no CI.
 - **Métodos**: alinhe os `method_id` com os métodos cadastrados no tenant, ou
   o core descarta silenciosamente as opções.
 
-## Dois modos de rodar
+## Como o binário sobe
 
-1. **In-process**: copie o pacote para `extensions/<id>` no core, registre no
-   loader, manifest com `runtime.type: in-process`.
-2. **Binário externo** (este template): `go build -o bin/example-shipping
-   ./cmd/example-shipping` + `MIRA_MANIFEST_PATH` apontando para o
-   `manifest.yaml`. Handshake: `./bin/example-shipping --commerce-ext-handshake`
-   → `commerce-ext-ok`.
+A API não arranca este processo e `MIRA_MANIFEST_PATH` não é o deploy. O
+`main` é `commerceext.Serve`. O handshake é a prova do CI:
 
-Caminho completo para produção (dev interno e parceiro) no README do
-[template genérico](https://github.com/mira-dev-tech/mira-commerce-plugin-example#colocando-em-produ%C3%A7%C3%A3o).
+```bash
+go build -o bin/example-shipping ./cmd/example-shipping
+./bin/example-shipping --commerce-ext-handshake   # commerce-ext-ok
+```
+
+Publicar é a tag `vX.Y.Z` no commit verde. A Mirá constrói esse SHA e grava a release. O caminho completo está no [`AGENTS.md`](AGENTS.md) e no [template genérico](https://github.com/mira-dev-tech/mira-commerce-plugin-example#colocando-em-produ%C3%A7%C3%A3o).
 
 ## Ecossistema Mirá Commerce
 

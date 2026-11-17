@@ -14,7 +14,7 @@ import (
 
 	commerceext "github.com/mira-dev-tech/commerce-ext"
 	"github.com/mira-dev-tech/commerce-ext/plugintest"
-	exampleshipping "github.com/mira-dev-tech/mira-commerce-plugin-shipping"
+	exampleshipping "github.com/aranduOS/aranduOS-plugin-shipping"
 )
 
 const payload = `{"options":[{"service":"expresso","price":29.9,"days_min":1,"days_max":2,"method_id":"11111111-1111-1111-1111-111111111111"}]}`

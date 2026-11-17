@@ -3,7 +3,7 @@
 Template de parceiro para `shipping.quote`. A única dependência de plataforma
 é `github.com/mira-dev-tech/commerce-ext`. O contrato de publicação é o mesmo
 do
-[mira-commerce-plugin-example](https://github.com/mira-dev-tech/mira-commerce-plugin-example/blob/main/AGENTS.md).
+[aranduOS-plugin-example](https://github.com/aranduOS/aranduOS-plugin-example/blob/main/AGENTS.md).
 O que muda aqui é uma API externa dentro do tecto do hook.
 
 ## Regras deste domínio
@@ -31,6 +31,6 @@ O que muda aqui é uma API externa dentro do tecto do hook.
 ## Publicar
 
 PR com `go test ./...` e o handshake verdes. Tag `vX.Y.Z`. O workflow da
-Mirá constrói esse SHA e grava a release. A primeira versão de um id novo
+plataforma constrói esse SHA e grava a release. A primeira versão de um id novo
 espera review. Ligar a uma empresa é outro disparo, e só numa empresa que o
 registo atribua a este parceiro.

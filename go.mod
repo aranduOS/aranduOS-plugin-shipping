@@ -1,4 +1,4 @@
-module github.com/mira-dev-tech/mira-commerce-plugin-shipping
+module github.com/aranduOS/aranduOS-plugin-shipping
 
 go 1.26.5
 

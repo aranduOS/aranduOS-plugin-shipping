@@ -147,8 +147,7 @@ id: meu-plugin
 version: 1.0.0
 compatibleCore: "^0.2.0"        # validado contra CoreLine (version.go)
 runtime:
-  type: in-process               # ou go-plugin (binário externo)
-  binary: extensions/meu-plugin  # go-plugin: caminho do binário
+  type: go-plugin                 # parceiro: processo à parte, não filho da API
 capabilities:
   hooks: [checkout.quote_adjust, order.pre_confirm]
   events:
@@ -158,30 +157,45 @@ capabilities:
 Hook ou evento usado mas não declarado ⇒ falha na verificação
 (`VerifyPluginManifest`).
 
-## Dois modos de execução
+## Como o processo sobe
 
-1. **In-process** — o plugin é compilado junto do core (modo padrão para
-   plugins mantidos pelo time da plataforma).
-2. **go-plugin (externo)** — o plugin é um **binário separado**; o host sobe o
-   processo e conversa por RPC. É o modo para código de terceiros/clientes.
-   Seu `main` é uma linha:
+O plugin de parceiro não é compilado na API e a API não o arranca. O `main`
+é uma linha, e o binário já está a escutar quando o host disca:
 
-   ```go
-   func main() { commerceext.Serve(&meuPlugin{}) }
-   ```
+```go
+func main() { commerceext.Serve(&meuPlugin{}) }
+```
 
-   O protocolo (implementado por [`serve.go`](serve.go)):
-   - `./plugin --commerce-ext-handshake` → imprime `commerce-ext-ok` (probe)
-   - `./plugin --commerce-ext-rpc 127.0.0.1:PORTA` → serve net/rpc até ser morto
+O protocolo está em [`serve.go`](serve.go):
+
+- `./plugin --commerce-ext-handshake` → imprime `commerce-ext-ok` e sai. É a prova do CI, não o deploy.
+- `./plugin --commerce-ext-rpc 0.0.0.0:8092` → serve net/rpc. No cluster a única env é `COMMERCE_EXT_HOST`.
+
+Plugins escritos pela Mirá continuam in-process, no monorepo interno. Esse caminho não está neste módulo. `MIRA_MANIFEST_PATH` também não: arrancaria o binário como filho da API.
+
+Quem cobra é o host. O plugin diz o medidor, as vezes e a chave de negócio. Não manda o preço. Sem saldo o hook não corre.
+
+## Compatibility
+
+`v0.2.3` acrescenta, na linha `0.2.0`, o que a ADR 0334 exige do processo
+de parceiro: `Usage.Add` (medidor, vezes e chave de negócio; o preço fica
+no host), o cliente do host, o prefixo de schema `ext_` e a guarda de SQL.
+O `CoreLine` não mudou, e um manifest com `compatibleCore: ^0.2.0` continua
+a casar. Não há hook renomeado.
+
+Os valores de pedido e de cotação (`OrderView.TotalAmount`,
+`QuoteAdjustInput.Subtotal`, `QuoteAdjustResult.TotalAmount` e `Discount`)
+passam a `float64`. Um plugin que os guardava em `float32` recompila; o
+JSON não muda.
 
 ## Versionamento
 
 - A linha do protocolo é `CoreLine` ([`version.go`](version.go)); as tags deste
-  repo acompanham (`v0.2.0` ↔ core API v0.2).
+  repo acompanham (`v0.2.x` ↔ core API v0.2).
 - `compatibleCore` do seu manifest usa semver (`^0.2.0` aceita toda a linha 0.2).
 
 ```bash
-go get github.com/mira-dev-tech/commerce-ext@v0.2.0
+go get github.com/mira-dev-tech/commerce-ext@v0.2.4
 ```
 
 ## Teste de integração local — `plugintest`
@@ -216,17 +230,14 @@ com o mini-host `plugintest`, o handshake do binário go-plugin e a paridade
 `Register` ↔ manifest. O que roda **em ambiente Mirá**: o host real com dados
 reais (workflow, outbox durável) e o aceite num checkout de verdade.
 
-Caminhos para produção:
+Publicar é pelo GitHub, não por um painel:
 
-- **Dev interno (in-process)**: plugin entra no monorepo do core via PR, atrás
-  de flag, e sobe no deploy normal da API.
-- **Parceiro (go-plugin externo)**: entrega **código-fonte versionado** (nunca
-  binário opaco — a Mirá audita e builda), validação em dev/staging, e em
-  produção o manifest entra pinado por versão. Kill switch: remover o manifest
-  do deploy + restart devolve o comportamento baseline.
+1. PR no repo do plugin, com `go test ./...` e o handshake verdes.
+2. Tag `vX.Y.Z` nesse commit. Não se envia binário.
+3. O workflow da Mirá clona esse SHA, constrói a imagem e grava a release com o digest que ele calculou. A primeira versão de um id novo espera review. A sessão de parceiro não grava release.
+4. Ligar a uma empresa é outro disparo. O pin nasce `installing` e só fica `active` quando o role `ext_<id>` respeita a RLS.
 
-O passo a passo completo, com a tabela de "o que roda onde", está no README do
-template [`mira-commerce-plugin-example`](https://github.com/mira-dev-tech/mira-commerce-plugin-example#testando-o-seu-plugin--o-que-roda-onde).
+As regras e a razão de cada uma estão no [`AGENTS.md`](AGENTS.md). O template comentado é o [`mira-commerce-plugin-example`](https://github.com/mira-dev-tech/mira-commerce-plugin-example).
 
 ## Governança deste repositório
 
@@ -246,3 +257,16 @@ template [`mira-commerce-plugin-example`](https://github.com/mira-dev-tech/mira-
 | Handler de evento não-idempotente | Dedupe pela chave de negócio, persistido |
 | Renomear código de bloqueio publicado | Código estável — é contrato |
 | Logar valores de `Secrets` | Nunca |
+
+## Ecossistema Mirá Commerce
+
+📚 **Documentação pública: [docs.mira-dev.tech](https://docs.mira-dev.tech)**
+
+| Repo | O que é |
+|---|---|
+| [mira-commerce-sdk-js](https://github.com/mira-dev-tech/mira-commerce-sdk-js) | SDKs oficiais JS/TS — `client-sdk` (API tipada) e `checkout-sdk` (checkout headless) |
+| [mira-commerce-storefront-guide](https://github.com/mira-dev-tech/mira-commerce-storefront-guide) | Guia oficial para construir um storefront (vitrine + checkout) sobre as APIs |
+| [commerce-ext](https://github.com/mira-dev-tech/commerce-ext) | SDK público de plugins — Extension Protocol |
+| [mira-commerce-plugin-example](https://github.com/mira-dev-tech/mira-commerce-plugin-example) | Template de plugin — exemplo didático (hooks, eventos, manifest, go-plugin) |
+| [mira-commerce-plugin-payment](https://github.com/mira-dev-tech/mira-commerce-plugin-payment) | Template de plugin de pagamento e antifraude (roteamento, 3DS, velocity) |
+| [mira-commerce-plugin-shipping](https://github.com/mira-dev-tech/mira-commerce-plugin-shipping) | Template de plugin de logística/frete (cotação externa, cache, circuit breaker) |

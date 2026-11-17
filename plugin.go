@@ -1,4 +1,4 @@
-// Package exampleshipping é o template de plugin de LOGÍSTICA / FRETE do Mira
+// Package exampleshipping é o template de plugin de LOGÍSTICA / FRETE do aranduOS
 // Commerce. Ele resolve o caso mais pedido — e mais perigoso — do domínio:
 // cotar frete numa TRANSPORTADORA EXTERNA durante o checkout.
 //
@@ -33,7 +33,7 @@
 // schema ext_<plugin> ou um cache compartilhado — ver o guia.
 //
 // Guia do modelo de extensibilidade:
-// https://github.com/mira-dev-tech/mira-commerce-plugin-example
+// https://github.com/aranduOS/aranduOS-plugin-example
 package exampleshipping
 
 import (

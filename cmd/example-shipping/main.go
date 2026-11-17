@@ -9,7 +9,7 @@ package main
 import (
 	commerceext "github.com/mira-dev-tech/commerce-ext"
 
-	exampleshipping "github.com/mira-dev-tech/mira-commerce-plugin-shipping"
+	exampleshipping "github.com/aranduOS/aranduOS-plugin-shipping"
 )
 
 func main() {
